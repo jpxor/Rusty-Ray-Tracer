@@ -1,0 +1,13 @@
+[package]
+name = "in_a_weekend"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+cgmath = "0.18.0"
+futures = "0.3.24"
+rand = "0.8.5"
+threadpool = "1.8.1"
