@@ -52,7 +52,7 @@ fn main() {
 
     let camera = Arc::new(Camera::new(origin, target, up, vfov, aspect, aperature));
 
-    let scene = Arc::new(RwLock::new(scene::new()));
+    let scene = Arc::new(RwLock::new(Scene::new()));
     {
         // scope the locked scene for adding things into it
         let mut scene_locked = scene.write().unwrap();
