@@ -19,6 +19,7 @@ pub struct HitRecord {
 }
 
 impl HitRecord {
+
     pub fn new(t:f32, point:Vector3, normal:Vector3, ray:&Ray, material:Arc<dyn Material>) -> HitRecord {
         let mut rec = HitRecord{
             t,
@@ -30,6 +31,7 @@ impl HitRecord {
         rec.set_face_normal(ray, normal);
         return rec;
     }
+
     fn set_face_normal(&mut self, ray:&Ray, outward_normal:Vector3) {
         self.front_face = cgmath::dot(ray.direction(), outward_normal) < 0.0;
         self.normal = match self.front_face {
@@ -37,6 +39,7 @@ impl HitRecord {
             false => -outward_normal,
         };
     }
+
 }
 
 impl Hittable for Vec<Box<dyn Hittable>> {
@@ -64,42 +67,44 @@ pub struct Sphere {
 
 impl Sphere {
     pub fn new(origin:Vector3, radius:f32, material: Arc<dyn Material>) -> Box<Sphere> {
-        Box::new(
-            Sphere{
-                material,
-                origin,
-                radius,
-            }
-        )
+        Box::new( Sphere{ material, origin, radius } )
     }
 }
 
 impl Hittable for Sphere {
+
     fn hit(&self, ray:&Ray, tmin:f32, tmax:f32) -> Option<HitRecord> {
         let oc = ray.origin() - self.origin;
-        let a = cgmath::dot(ray.direction(),ray.direction());
+        let a = cgmath::dot(ray.direction(), ray.direction());
         let half_b = cgmath::dot(oc, ray.direction());
         let c = cgmath::dot(oc, oc) - self.radius * self.radius;
         let d = half_b*half_b - a*c;
+
         if d < 0.0 {
             return None;
         }
         let sqrt_d = d.sqrt();
         let inv_a = 1.0 / a;
-        let t:f32;
-        let leftr = (-half_b - sqrt_d) * inv_a;
-        if leftr < tmin || tmax < leftr {
-            let rightr = (-half_b + sqrt_d) * inv_a;
-            if rightr < tmin || tmax < rightr {
-                return None;
-            } else {
-                t = rightr;
+        let left_root = (-half_b - sqrt_d) * inv_a;
+
+        let t = match in_range(left_root, tmin, tmax) {
+            true => left_root,
+            false => {
+                let right_root = (-half_b + sqrt_d) * inv_a;
+                match in_range(right_root, tmin, tmax) {
+                    true => right_root,
+                    false => {
+                        return None;
+                    }
+                }
             }
-        } else {
-            t = leftr;
-        }
+        };
         let point = ray.at(t);
         let normal = (point - self.origin) / self.radius;
         return Some(HitRecord::new(t, point, normal, ray, self.material.clone()));
     }
+}
+
+fn in_range(v:f32, min:f32, max:f32) -> bool {
+    min <= v && v <= max
 }

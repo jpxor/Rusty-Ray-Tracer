@@ -1,6 +1,5 @@
 
 use std::ops::Mul;
-
 use std::fs::File;
 use std::io::Write;
 use std::ops::Add;
@@ -86,6 +85,7 @@ impl Add for Color {
         }
     }
 }
+
 impl Mul<Color> for f32 {
     type Output = Color;
     fn mul(self, rhs: Color) -> Color {
@@ -96,6 +96,7 @@ impl Mul<Color> for f32 {
          }
     }
 }
+
 impl Mul for Color {
     type Output = Self;
     fn mul(self, rhs: Self) -> Self {
@@ -107,8 +108,8 @@ impl Mul for Color {
     }
 }
 
-
 impl Region {
+
     pub fn chunks(&self, size:usize) -> Vec<Region> {
         let mut chunks = Vec::new();
         let mut region = Region {
@@ -136,9 +137,10 @@ impl Region {
         }
         return chunks;
     }
+
 }
 
-impl<'a> Image {
+impl Image {
 
     pub fn new(width:usize, height:usize) -> Image {
         Image::new_with_region( Region {
@@ -177,7 +179,7 @@ impl<'a> Image {
             }
             for i in 0..src_stride {
                 if x+i >= dst_stride {
-                    continue;
+                    break;
                 }
                 dst_bytes[dst_offset+i] = src_bytes[src_offset+i];
             }
@@ -191,7 +193,6 @@ impl<'a> Image {
             let n = (255.0 * f) as u8;
             u8::clamp(n, 0, 255)
         };
-
         let width = self.region.width;
         let height = self.region.height;
         let minx = self.region.x;

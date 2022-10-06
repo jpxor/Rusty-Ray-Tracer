@@ -1,27 +1,23 @@
 
-use std::sync::Arc;
-use rand::Rng;
-
 use crate::ray::Ray;
 use crate::image::Color;
 use crate::hittables::HitRecord;
-
-type Vector3 = cgmath::Vector3<f32>;
-use cgmath::AbsDiffEq;
-
 use crate::renderer::random_unit_vector3;
 
+use cgmath::AbsDiffEq;
+use std::sync::Arc;
+use rand::Rng;
+
+type Vector3 = cgmath::Vector3<f32>;
+
 pub struct Scattered {
-    pub attenuation:Color,
-    pub ray:Ray,
+    pub attenuation: Color,
+    pub ray: Ray,
 }
 
 impl Scattered {
     pub fn new(ray:Ray, attenuation:Color) -> Option<Scattered> {
-        Some(Scattered{
-            attenuation,
-            ray,
-        })
+        Some( Scattered{ attenuation,  ray } )
     }
 }
 
