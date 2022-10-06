@@ -138,12 +138,15 @@ fn main() {
 // full image single-sample on each thread, 50 jobs x 12 threads
 // : 600x400 => 25038 ms | 26534 ms | 25801 ms
 // 
+// full image single-sample, 50 jobs x 3 threads
+// : 600x400 => 44626 ms
+//
 // full image single-sample, 50 jobs, single thread
 // : 600x400 => 92378 ms | 95965 ms
 
 fn run(renderer:&Arc<Renderer>, camera:&Arc<Camera>, scene:&Arc<RwLock<Scene>>, img:&Arc<Image>) {
 
-    let nthreads = 1;//std::thread::available_parallelism().unwrap().get();
+    let nthreads = std::thread::available_parallelism().unwrap().get();
     let pool = ThreadPool::new(nthreads);
     let njobs = renderer.nsamples;
 
