@@ -16,7 +16,6 @@ use rand::Rng;
 use crate::camera::Camera;
 use crate::scene::Scene;
 use crate::image::Image;
-use crate::image::Region;
 use crate::image::Color;
 use crate::hittables::Sphere;
 use crate::renderer::Renderer;
@@ -36,8 +35,8 @@ fn main() {
     println!("Raytracer In a Weekend!");
     println!("output: {}", outpath);
 
-    let aspect = 16.0 / 9.0;
-    let width = 800;
+    let aspect = 3.0 / 2.0;
+    let width = 600;
     let height = (width as f32 / aspect) as usize;
     let img = Arc::new(Image::new(width, height));
 
@@ -113,7 +112,7 @@ fn main() {
        
     } // releases write lock on scene
 
-    let renderer = Arc::new(Renderer::new(1, 2));
+    let renderer = Arc::new(Renderer::new(50, 50));
     println!("running...");
     let timer = Instant::now();
 
@@ -124,32 +123,33 @@ fn main() {
     println!("done! render time: {} ms", elapsed);   
 }
 
-// benchmarks
+// benchmarks (600x400, 50 samples, 50 bounces)
+// # cargo run --release
+//
 // single thread:
 // : 600x400 => 96627 ms
+//
 // split into chunks for 12 threads:
 // : 64x64 => 26207 ms | 26045 ms | 25305 ms
 // : 64x1  => 27585 ms | 27457 ms
 // : 600x1 => 25689 ms | 26514 ms | 25785 ms
 // : 32x32 => 25294 ms | 25510 ms | 26378 ms
+//
+// full image single-sample on each thread, 50 jobs
+// : 600x400 => 25038 ms | 26534 ms | 25801 ms
 
 fn run(renderer:&Arc<Renderer>, camera:&Arc<Camera>, scene:&Arc<RwLock<Scene>>, img:&Arc<Image>) {
-    let regions = Region{
-        x: 0, y: 0,
-        width: img.width(),
-        height: img.height(),
-    }.chunks(64);
 
     let nthreads = std::thread::available_parallelism().unwrap().get();
     let pool = ThreadPool::new(nthreads);
-    let njobs = regions.len();
+    let njobs = renderer.nsamples;
 
     println!("parallelism: {}", nthreads);
     println!("njobs: {}", njobs);
 
     let (tx, rx) = std::sync::mpsc::channel();
 
-    for i in 0..njobs
+    for _ in 0..njobs
     {
         let tx = tx.clone();
         let scene = scene.clone();
@@ -159,7 +159,7 @@ fn run(renderer:&Arc<Renderer>, camera:&Arc<Camera>, scene:&Arc<RwLock<Scene>>, 
         let target = RenderTarget {
             full_width: img.width(),
             full_height: img.height(),
-            buffer: Image::new_with_region(regions[i]),
+            buffer: Image::new(img.width(), img.height()),
         };
         pool.execute(move|| {
             let scene_readonly = scene.read().unwrap();
@@ -170,7 +170,7 @@ fn run(renderer:&Arc<Renderer>, camera:&Arc<Camera>, scene:&Arc<RwLock<Scene>>, 
 
     for i in 0..njobs {
         let partial = rx.recv().unwrap();
-        img.blit(&partial);
+        img.merge(i, &partial);
         println!("\rprogress: {:.2}%", 100.0 * (i+1) as f32 / njobs as f32);
     }
 }

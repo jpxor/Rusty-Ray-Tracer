@@ -159,6 +159,24 @@ impl<'a> Image {
         self.region.height
     }
 
+    pub fn merge(&self, weight:usize, src:&Image) {
+        assert!(self.width() == src.width() && self.height() == src.height(), "images are not the same size");
+
+        let w0 = weight as f32 / (weight+1) as f32;
+        let w1 = 1.0 / (weight+1) as f32;
+
+        let stride = 3*self.width();
+        let nbytes = stride * self.height();
+
+        let mut dst_bytes = self.bytes.lock().unwrap();
+        let src_bytes = src.bytes.lock().unwrap();
+
+        for i in 0..nbytes {
+            let v = w0 * dst_bytes[i] as f32 + w1 * src_bytes[i] as f32;
+            dst_bytes[i] = (v + 0.5) as u8; // ensure proper rounding!
+        }
+    }
+
     pub fn blit(&self, src:&Image) {
         let x = src.region.x;
         let y = src.region.y;
