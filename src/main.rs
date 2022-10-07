@@ -149,7 +149,7 @@ fn run(renderer:&Arc<Renderer>, camera:&Arc<Camera>, scene:&Arc<RwLock<Scene>>, 
 
     let (tx, rx) = std::sync::mpsc::channel();
 
-    for i in 0..njobs
+    for region in regions
     {
         let tx = tx.clone();
         let scene = scene.clone();
@@ -159,7 +159,7 @@ fn run(renderer:&Arc<Renderer>, camera:&Arc<Camera>, scene:&Arc<RwLock<Scene>>, 
         let target = RenderTarget {
             full_width: img.width(),
             full_height: img.height(),
-            buffer: Image::new_with_region(regions[i]),
+            buffer: Image::new_with_region(region),
         };
         pool.execute(move|| {
             let scene_readonly = scene.read().unwrap();

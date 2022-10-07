@@ -29,7 +29,7 @@ impl HitRecord {
             front_face: false,
         };
         rec.set_face_normal(ray, normal);
-        return rec;
+        rec
     }
 
     fn set_face_normal(&mut self, ray:&Ray, outward_normal:Vector3) {
@@ -55,7 +55,7 @@ impl Hittable for Vec<Box<dyn Hittable>> {
                 }
             }
         }
-        return result;
+        result
     }
 }
 
@@ -101,7 +101,7 @@ impl Hittable for Sphere {
         };
         let point = ray.at(t);
         let normal = (point - self.origin) / self.radius;
-        return Some(HitRecord::new(t, point, normal, ray, self.material.clone()));
+        Some(HitRecord::new(t, point, normal, ray, self.material.clone()))
     }
 }
 

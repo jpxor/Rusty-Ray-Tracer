@@ -41,8 +41,7 @@ fn random_in_unit_disk() -> Vector3 {
 }
 
 fn deg_to_rad(deg:f32) -> f32 {
-    const PI:f32 = 3.1415926535897932385;
-    deg * PI / 180.0
+    deg * std::f32::consts::PI / 180.0
 }
 
 impl Camera {

@@ -84,7 +84,7 @@ impl Renderer {
     }
     
     pub fn on_hit(&self, scene:&Scene, ray:&Ray, depth:usize, hit:HitRecord) -> Color {
-        match hit.material.scatter(&ray, &hit) {
+        match hit.material.scatter(ray, &hit) {
             None => Color::black(),
             Some(scatter) => {
                 scatter.attenuation * self.cast(scene, &scatter.ray, depth-1)

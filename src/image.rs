@@ -59,7 +59,7 @@ impl Iterator for RegionIter {
         }
         let ret = (self.x, self.y);
         self.x += 1;
-        return Some(ret);
+        Some(ret)
     }
 }
 
@@ -135,7 +135,7 @@ impl Region {
             region.y += region.height;
             region.x = 0;
         }
-        return chunks;
+        chunks
     }
 
 }
@@ -230,7 +230,7 @@ impl Image {
         let h = self.region.height;
         let filesize:u32 = 52 + (3*w*h) as u32;
 
-        let mut file_header: [u8; 14] = ['B' as u8,'M' as u8, 0,0,0,0, 0,0, 0,0, 54,0,0,0];
+        let mut file_header: [u8; 14] = [b'B', b'M', 0,0,0,0, 0,0, 0,0, 54,0,0,0];
         let mut info_header: [u8; 40] = [40,0,0,0, 0,0,0,0, 0,0,0,0, 1,0, 24,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0];
         let stride_pad: [u8; 3] = [0, 0, 0];
 
