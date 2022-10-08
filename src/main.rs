@@ -1,30 +1,22 @@
 
-mod ray;
-mod image;
-mod camera;
-mod scene;
-mod renderer;
-mod hittables;
-mod materials;
-
 use std::sync::Arc;
 use std::sync::RwLock;
 use std::time::Instant;
 use threadpool::ThreadPool;
 use rand::Rng;
 
-use crate::camera::Camera;
-use crate::scene::Scene;
-use crate::image::Image;
-use crate::image::Region;
-use crate::image::Color;
-use crate::hittables::Sphere;
-use crate::renderer::Renderer;
-use crate::renderer::RenderTarget;
+use rustytracer::camera::Camera;
+use rustytracer::scene::Scene;
+use rustytracer::image::Image;
+use rustytracer::image::Region;
+use rustytracer::image::Color;
+use rustytracer::hittables::Sphere;
+use rustytracer::renderer::Renderer;
+use rustytracer::renderer::RenderTarget;
 
-use crate::materials::Metal;
-use crate::materials::Lambertian;
-use crate::materials::Dialectric;
+use rustytracer::materials::Metal;
+use rustytracer::materials::Lambertian;
+use rustytracer::materials::Dialectric;
 
 type Vector3 = cgmath::Vector3<f32>;
 use cgmath::InnerSpace;
