@@ -47,7 +47,7 @@ impl Renderer {
 
         rands_u.push(0.0);
         rands_v.push(0.0);
-        for _ in 2..rands_u.capacity()+1 {
+        for _ in 1..self.nsamples {
             rands_u.push(rng.gen_range(-0.5..0.5) * inv_w);
             rands_v.push(rng.gen_range(-0.5..0.5) * inv_h);
         }
