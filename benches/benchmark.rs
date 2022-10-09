@@ -74,6 +74,9 @@ mod benches {
             full_height: image.height(),
             buffer: image,
         };
+
+        // using: Intel(R) Core(TM) i7-10750H CPU @ 2.60GHz, 2592 Mhz
+        // result: 1,681,725,700 ns/iter (+/- 80,908,529) [ 1.682 sec/iter (+/- 4.81%) ]
         b.iter(|| renderer.render(&camera, &scene, &target));
     }
 
