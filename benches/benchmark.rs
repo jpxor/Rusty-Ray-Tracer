@@ -76,7 +76,7 @@ mod benches {
         };
 
         // using: Intel(R) Core(TM) i7-10750H CPU @ 2.60GHz, 2592 Mhz
-        // result: 1,681,725,700 ns/iter (+/- 80,908,529) [ 1.682 sec/iter (+/- 4.81%) ]
+        // result: 1,573,615,010 ns/iter (+/- 11,867,528) [ 1.573 sec/iter (+/- 0.71%) ]
         b.iter(|| renderer.render(&camera, &scene, &target));
     }
 

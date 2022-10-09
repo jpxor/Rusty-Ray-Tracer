@@ -161,6 +161,14 @@ impl Image {
         self.region.height
     }
 
+    pub fn y_range_iter(&self) -> std::ops::Range<usize> {
+        self.region.y..self.region.y+self.region.height
+    }
+
+    pub fn x_range_iter(&self) -> std::ops::Range<usize> {
+        self.region.x..self.region.x+self.region.width
+    }
+
     pub fn blit(&self, src:&Image) {
         let x = src.region.x;
         let y = src.region.y;
