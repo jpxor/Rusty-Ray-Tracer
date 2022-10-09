@@ -5,3 +5,4 @@ pub mod scene;
 pub mod renderer;
 pub mod hittables;
 pub mod materials;
+pub mod utils;

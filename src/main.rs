@@ -3,26 +3,20 @@ use std::sync::Arc;
 use std::sync::RwLock;
 use std::time::Instant;
 use threadpool::ThreadPool;
-use rand::Rng;
 
+use rustytracer::utils;
 use rustytracer::camera::Camera;
 use rustytracer::scene::Scene;
 use rustytracer::image::Image;
 use rustytracer::image::Region;
-use rustytracer::image::Color;
-use rustytracer::hittables::Sphere;
 use rustytracer::renderer::Renderer;
 use rustytracer::renderer::RenderTarget;
-
-use rustytracer::materials::Metal;
-use rustytracer::materials::Lambertian;
-use rustytracer::materials::Dialectric;
 
 type Vector3 = cgmath::Vector3<f32>;
 use cgmath::InnerSpace;
 
 fn main() {
-    let mut rng = rand::thread_rng();
+    
     let outpath = "traced.bmp";
 
     println!("Raytracer In a Weekend!");
@@ -31,7 +25,6 @@ fn main() {
     let aspect = 16.0 / 9.0;
     let width = 800;
     let height = (width as f32 / aspect) as usize;
-    let img = Arc::new(Image::new(width, height));
 
     let origin = Vector3::new(13.0, 2.0, 3.0);
     let target = Vector3::new(0.0, 0.0, 0.0);
@@ -42,70 +35,16 @@ fn main() {
     // update target to get fosus distance of 10
     let target = 10.0 * (target-origin).normalize() + origin;
 
+    let renderer = Arc::new(Renderer::new(1, 3));
+    let img = Arc::new(Image::new(width, height));
+    let scene = Arc::new(RwLock::new(Scene::new()));
     let camera = Arc::new(Camera::new(origin, target, up, vfov, aspect, aperature));
 
-    let scene = Arc::new(RwLock::new(Scene::new()));
     {
-        // scope the locked scene for adding things into it
         let mut scene_locked = scene.write().unwrap();
+        utils::test_scene_setup(&mut scene_locked);
+    }
 
-        // ground
-        let mat_ground = Lambertian::new(Color::new(0.5, 0.5, 0.5));
-        scene_locked.push(
-            Sphere::new( Vector3::new(0.0, -1000.0, 0.0), 1000.0, mat_ground )
-        );
-
-        // little balls randomly strewn about
-        for a in -11..11 {
-            for b in -11..11 {
-                let rand_mat = rng.gen_range(0.0..1.0);
-                let rand_a = rng.gen_range(0.0..1.0);
-                let rand_b = rng.gen_range(0.0..1.0);
-
-                let center = Vector3::new(a as f32 +0.9*rand_a, 0.2, b as f32+0.9*rand_b);
-                let offset = center-Vector3::new(4.0, 0.2, 0.0);
-
-                if cgmath::dot(offset, offset) > (0.9*0.9) {
-                    if rand_mat < 0.8 {
-                        // diffuse
-                        let albedo = Color::new(rng.gen_range(0.0..1.0), rng.gen_range(0.0..1.0), rng.gen_range(0.0..1.0));
-                        let mat = Lambertian::new(albedo);
-                        scene_locked.push(
-                            Sphere::new(center, 0.2, mat)
-                        );
-                    } else if rand_mat < 0.95 {
-                        // metal
-                        let albedo = Color::new(rng.gen_range(0.0..1.0), rng.gen_range(0.0..1.0), rng.gen_range(0.0..1.0));
-                        let roughness = rng.gen_range(0.0..1.0);
-                        let mat = Metal::new(albedo, roughness);
-                        scene_locked.push(
-                            Sphere::new(center, 0.2, mat)
-                        );
-                    } else {
-                        // glass
-                        let mat = Dialectric::new(1.5);
-                        scene_locked.push(
-                            Sphere::new(center, 0.2, mat)
-                        );
-                    }
-                }
-            }
-        }
-
-        // the big balls
-        scene_locked.push(Sphere::new(
-            Vector3::new(0.0, 1.0, 0.0), 1.0, Dialectric::new(1.5)
-        ));
-        scene_locked.push(Sphere::new(
-            Vector3::new(-4.0, 1.0, 0.0), 1.0, Lambertian::new(Color::new(0.4, 0.2, 0.1))
-        ));
-        scene_locked.push(Sphere::new(
-            Vector3::new(4.0, 1.0, 0.0), 1.0, Metal::new(Color::new(0.7, 0.6, 0.5), 0.0)
-        ));
-       
-    } // releases write lock on scene
-
-    let renderer = Arc::new(Renderer::new(1, 2));
     println!("running...");
     let timer = Instant::now();
 
