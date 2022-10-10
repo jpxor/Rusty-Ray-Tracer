@@ -2,6 +2,7 @@
 use crate::ray::Ray;
 use crate::image::Image;
 use crate::image::Color;
+use crate::image::Coloru8;
 use crate::scene::Scene;
 use crate::camera::Camera;
 use crate::hittables::HitRecord;
@@ -17,6 +18,7 @@ pub struct Renderer {
     max_depth: usize,
     tmin:f32,
     tmax:f32,
+    gamma_lut:Vec<u8>,
 }
 
 pub struct RenderTarget {
@@ -28,29 +30,30 @@ pub struct RenderTarget {
 impl Renderer {
 
     pub fn new(nsamples:usize, max_depth:usize) -> Self {
+        let gamma_lut = (0..256).map( |i| {
+            (255.0 * (i as f32 / 255.0).sqrt()) as u8
+        }).collect();
         Renderer {
             nsamples,
             max_depth,
             tmin: 0.001,
             tmax: 1000.0,
+            gamma_lut,
         }
     }
 
     pub fn render(&self, camera:&Camera, scene:&Scene, target:&RenderTarget) {
-        let mut rng = SmallRng::seed_from_u64(0);
-        let mut rands_u: Vec<f32> = Vec::with_capacity(self.nsamples);
-        let mut rands_v: Vec<f32> = Vec::with_capacity(self.nsamples);
-
         let inv_w = 1.0 / (target.full_width-1) as f32;
         let inv_h = 1.0 / (target.full_height-1) as f32;
-        let scale = 1.0 / self.nsamples as f32;
-
-        rands_u.push(0.0);
-        rands_v.push(0.0);
-        for _ in 1..self.nsamples {
-            rands_u.push(rng.gen_range(-0.5..0.5) * inv_w);
-            rands_v.push(rng.gen_range(-0.5..0.5) * inv_h);
-        }
+        let scale = 255.0 / self.nsamples as f32;
+        
+        let mut rng = SmallRng::seed_from_u64(0);
+        let rands: Vec<(f32,f32)> = (0..self.nsamples).map( |i| {
+            match i {
+                0 => (0.0, 0.0),
+                _ => (rng.gen_range(-0.5..0.5) * inv_w, rng.gen_range(-0.5..0.5) * inv_h),
+            }
+        }).collect();
 
         for y in target.buffer.y_range_iter() {
             let v = y as f32 * inv_h;
@@ -60,17 +63,17 @@ impl Renderer {
                 let mut color = Color::black();
 
                 for i in 0..self.nsamples {
-                    let ray = camera.get_ray(u+rands_u[i], v+rands_v[i]);
+                    let ray = camera.get_ray(u+rands[i].0, v+rands[i].1);
                     color = color + self.cast(scene, &ray, self.max_depth);
                 }
 
-                // scale and gamma correction (gamma=2)
-                color = Color {
-                    red:   (scale*color.red).sqrt(),
-                    green: (scale*color.green).sqrt(),
-                    blue:  (scale*color.blue).sqrt(),
+                // scale and gamma correction
+                let color = Coloru8 {
+                    red:   self.gamma_lut[(scale*color.red)   as usize],
+                    green: self.gamma_lut[(scale*color.green) as usize],
+                    blue:  self.gamma_lut[(scale*color.blue)  as usize],
                 };
-                target.buffer.set_pixel_color(x, y, color);
+                target.buffer.set_pixel_color_u8(x, y, color);
             }
         }
     }

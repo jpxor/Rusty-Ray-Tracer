@@ -12,6 +12,12 @@ pub struct Color {
     pub blue:f32,
 }
 
+pub struct Coloru8 {
+    pub red:u8,
+    pub green:u8,
+    pub blue:u8,
+}
+
 #[derive(Clone, Copy)]
 pub struct Region {
     pub x:usize,
@@ -196,11 +202,7 @@ impl Image {
         }
     }
 
-    pub fn set_pixel_color(&self, x:usize, y:usize, color:Color) {
-        let normalize = |f:f32| -> u8 {
-            let n = (255.0 * f) as u8;
-            u8::clamp(n, 0, 255)
-        };
+    pub fn set_pixel_color_u8(&self, x:usize, y:usize, color:Coloru8) {
         let width = self.region.width;
         let height = self.region.height;
         let minx = self.region.x;
@@ -224,9 +226,21 @@ impl Image {
         let mut bytes = self.bytes.lock().unwrap();
 
         // (B,G,R)
-        bytes[i+0] = normalize(color.blue);
-        bytes[i+1] = normalize(color.green);
-        bytes[i+2] = normalize(color.red);
+        bytes[i+0] = color.blue;
+        bytes[i+1] = color.green;
+        bytes[i+2] = color.red;
+    }
+
+    pub fn set_pixel_color(&self, x:usize, y:usize, color:Color) {
+        let normalize = |f:f32| -> u8 {
+            let n = (255.0 * f) as u8;
+            u8::clamp(n, 0, 255)
+        };
+        self.set_pixel_color_u8(x, y, Coloru8 {
+            red:   normalize(color.red),
+            green: normalize(color.green),
+            blue:  normalize(color.blue),
+        });
     }
 
     pub fn write_bmp(&self, path: &str) {
