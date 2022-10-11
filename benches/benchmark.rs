@@ -4,7 +4,7 @@ extern crate test;
 
 use rustytracer::camera::Camera;
 use rustytracer::image::Image;
-use rustytracer::image::Color;
+use rustytracer::image::Coloru8;
 use rustytracer::image::Region;
 use rustytracer::renderer::Renderer;
 use rustytracer::scene::Scene;
@@ -30,16 +30,20 @@ mod benches {
         let v = 0.25;
         let camera = Camera::new(origin, target, up, vfov, aspect, aperature);
         b.iter(|| camera.get_ray(u,v));
-    } // last result: 43 ns/iter (+/- 3)
+    } // last result: 40 ns/iter (+/- 1)
 
     #[bench]
     fn image_set_pixel_color(b: &mut Bencher) {
         let image = Image::new(600, 400);
-        let color = Color::new(0.5, 0.5, 0.5);
+        let color = Coloru8{
+            red:   128,
+            green: 128,
+            blue:  128,
+        };
         let x = 300;
         let y = 200;
-        b.iter(|| image.set_pixel_color(x, y, color));
-    } // last result: 15 ns/iter (+/- 0)
+        b.iter(|| image.set_pixel_color_u8(x, y, color));
+    } // last result: 14 ns/iter (+/- 2)
 
     #[bench]
     fn image_blit(b: &mut Bencher) {
@@ -55,8 +59,8 @@ mod benches {
 
     #[bench]
     fn renderer_render(b: &mut Bencher) {
-        let image = Image::new(600, 400);
-        let renderer = Renderer::new(1, 3);
+        let image = Image::new(8, 8);
+        let renderer = Renderer::new(8, 8);
 
         let origin = Vector3::new(13.0, 2.0, 3.0);
         let target = Vector3::new(0.0, 0.0, 0.0);
@@ -76,7 +80,8 @@ mod benches {
         };
 
         // using: Intel(R) Core(TM) i7-10750H CPU @ 2.60GHz, 2592 Mhz
-        // result: 1,538,352,500 ns/iter (+/- 12,114,295) [ 1.538 sec/iter (+/- 0.012) ]
+        // before: 3,907,600 ns/iter (+/- 303,046)
+        // after:  3,842,555 ns/iter (+/- 303,492)  
         b.iter(|| renderer.render(&camera, &scene, &target));
     }
 

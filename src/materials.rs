@@ -2,7 +2,7 @@
 use crate::ray::Ray;
 use crate::image::Color;
 use crate::hittables::HitRecord;
-use crate::renderer::random_unit_vector3;
+use crate::randlut::random_unit_vector3;
 
 use cgmath::AbsDiffEq;
 use std::sync::Arc;

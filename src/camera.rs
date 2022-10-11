@@ -1,7 +1,7 @@
 
 use crate::ray::Ray;
+use crate::randlut::random_in_unit_disk;
 
-use rand::Rng;
 use cgmath::InnerSpace;
 
 type Vector3 = cgmath::Vector3<f32>;
@@ -22,22 +22,6 @@ pub struct Camera {
     vp_horizontal: Vector3,
     vp_vertical: Vector3,
     lens_radius:f32,
-}
-
-fn random_in_unit_disk() -> Vector3 {
-    let mut rng = rand::thread_rng();
-    loop {
-        let p = Vector3::new(
-            rng.gen_range(-1.0..1.0),
-            rng.gen_range(-1.0..1.0),
-            0.0,
-        );
-        if cgmath::dot(p, p) >= 1.0 {
-            continue
-        } else {
-            return p;
-        }
-    }
 }
 
 fn deg_to_rad(deg:f32) -> f32 {

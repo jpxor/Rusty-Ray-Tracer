@@ -32,10 +32,10 @@ fn main() {
     let vfov = 20.0;
     let aperature = 0.1;
 
-    // update target to get fosus distance of 10
+    // update target to get focus distance of 10
     let target = 10.0 * (target-origin).normalize() + origin;
 
-    let renderer = Arc::new(Renderer::new(1, 3));
+    let renderer = Arc::new(Renderer::new(32, 32));
     let img = Arc::new(Image::new(width, height));
     let scene = Arc::new(RwLock::new(Scene::new()));
     let camera = Arc::new(Camera::new(origin, target, up, vfov, aspect, aperature));
@@ -54,15 +54,6 @@ fn main() {
     img.write_bmp(outpath);
     println!("done! render time: {} ms", elapsed);   
 }
-
-// benchmarks
-// single thread:
-// : 600x400 => 96627 ms
-// split into chunks for 12 threads:
-// : 64x64 => 26207 ms | 26045 ms | 25305 ms
-// : 64x1  => 27585 ms | 27457 ms
-// : 600x1 => 25689 ms | 26514 ms | 25785 ms
-// : 32x32 => 25294 ms | 25510 ms | 26378 ms
 
 fn run(renderer:&Arc<Renderer>, camera:&Arc<Camera>, scene:&Arc<RwLock<Scene>>, img:&Arc<Image>) {
     let regions = Region{

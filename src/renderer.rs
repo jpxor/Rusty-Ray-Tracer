@@ -7,18 +7,24 @@ use crate::scene::Scene;
 use crate::camera::Camera;
 use crate::hittables::HitRecord;
 
+use lazy_static::lazy_static;
 use rand::{Rng, SeedableRng};
 use rand::rngs::SmallRng;
 use cgmath::InnerSpace;
 
 type Vector3 = cgmath::Vector3<f32>;
 
+lazy_static! {
+    static ref GAMMA_LUT:Vec<u8> = (0..256).map( |i| {
+        (255.0 * (i as f32 / 255.0).sqrt()) as u8
+    }).collect();
+}
+
 pub struct Renderer {
     nsamples: usize,
     max_depth: usize,
     tmin:f32,
     tmax:f32,
-    gamma_lut:Vec<u8>,
 }
 
 pub struct RenderTarget {
@@ -30,15 +36,11 @@ pub struct RenderTarget {
 impl Renderer {
 
     pub fn new(nsamples:usize, max_depth:usize) -> Self {
-        let gamma_lut = (0..256).map( |i| {
-            (255.0 * (i as f32 / 255.0).sqrt()) as u8
-        }).collect();
         Renderer {
             nsamples,
             max_depth,
             tmin: 0.001,
             tmax: 1000.0,
-            gamma_lut,
         }
     }
 
@@ -69,9 +71,9 @@ impl Renderer {
 
                 // scale and gamma correction
                 let color = Coloru8 {
-                    red:   self.gamma_lut[(scale*color.red)   as usize],
-                    green: self.gamma_lut[(scale*color.green) as usize],
-                    blue:  self.gamma_lut[(scale*color.blue)  as usize],
+                    red:   GAMMA_LUT[(scale*color.red)   as usize],
+                    green: GAMMA_LUT[(scale*color.green) as usize],
+                    blue:  GAMMA_LUT[(scale*color.blue)  as usize],
                 };
                 target.buffer.set_pixel_color_u8(x, y, color);
             }
@@ -106,24 +108,4 @@ impl Renderer {
         }
     }
 
-}
-
-pub fn random_in_unit_sphere_vector3() -> Vector3 {
-    let mut rng = rand::thread_rng();
-    let mut randv:Vector3;
-    loop {
-        randv = Vector3::new(
-            rng.gen_range(-1.0..1.0),
-            rng.gen_range(-1.0..1.0),
-            rng.gen_range(-1.0..1.0),
-        );
-        if cgmath::dot(randv, randv) >= 1.0 {
-            continue
-        }
-        return randv;
-    }
-}
-
-pub fn random_unit_vector3() -> Vector3 {
-    random_in_unit_sphere_vector3().normalize()
 }

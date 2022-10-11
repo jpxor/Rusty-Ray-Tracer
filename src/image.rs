@@ -12,6 +12,7 @@ pub struct Color {
     pub blue:f32,
 }
 
+#[derive(Clone, Copy)]
 pub struct Coloru8 {
     pub red:u8,
     pub green:u8,
