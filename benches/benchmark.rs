@@ -30,7 +30,7 @@ mod benches {
         let v = 0.25;
         let camera = Camera::new(origin, target, up, vfov, aspect, aperature);
         b.iter(|| camera.get_ray(u,v));
-    } // last result: 33 ns/iter (+/- 2)
+    } // last result: 16 ns/iter (+/- 2)
 
     #[bench]
     fn image_set_pixel_color(b: &mut Bencher) {
@@ -43,7 +43,7 @@ mod benches {
         let x = 300;
         let y = 200;
         b.iter(|| image.set_pixel_color_u8(x, y, color));
-    } // last result: 14 ns/iter (+/- 2)
+    } // last result: 14 ns/iter (+/- 1)
 
     #[bench]
     fn image_blit(b: &mut Bencher) {
@@ -80,8 +80,8 @@ mod benches {
         };
 
         // using: Intel(R) Core(TM) i7-10750H CPU @ 2.60GHz, 2592 Mhz
-        // before:  3,842,555 ns/iter (+/- 303,492)  
-        // after:   3,850,085 ns/iter (+/- 289,498)
+        // before:  3,850,085 ns/iter (+/- 289,498)
+        // after:   3,743,690 ns/iter (+/- 255,525)
         b.iter(|| renderer.render(&camera, &scene, &target));
     }
 
