@@ -1,7 +1,8 @@
 
-use rand::Rng;
-use cgmath::InnerSpace;
 use crate::ray::Ray;
+use crate::randlut::random_in_unit_disk;
+
+use cgmath::InnerSpace;
 
 type Vector3 = cgmath::Vector3<f32>;
 
@@ -23,16 +24,8 @@ pub struct Camera {
     lens_radius:f32,
 }
 
-fn random_in_unit_disk() -> Vector3 {
-    let mut rng = rand::thread_rng();
-    loop {
-        let p = Vector3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
-        if cgmath::dot(p, p) >= 1.0 {
-            continue
-        } else {
-            return p;
-        }
-    }
+fn deg_to_rad(deg:f32) -> f32 {
+    deg * std::f32::consts::PI / 180.0
 }
 
 impl Camera {
@@ -43,7 +36,7 @@ impl Camera {
                aspect_ratio:f32,
                aperature:f32) -> Self {
 
-        let theta = vfov * (3.1415926535897932385 / 180.0);
+        let theta = deg_to_rad(vfov);
         let h = (theta / 2.0).tan();
 
         let vp_height = 2.0 * h;
@@ -67,6 +60,7 @@ impl Camera {
         }
     }
 
+    #[inline]
     pub fn get_ray(&self, u:f32, v:f32) -> Ray {
         let direction = self.vp_center 
             + (u-0.5) * self.vp_horizontal 
@@ -75,4 +69,5 @@ impl Camera {
         let offset = self.h_unit*rdisk.x + self.v_unit*rdisk.y; 
         Ray::new(self.origin + offset, direction - offset)
     }
+
 }

@@ -1,6 +1,5 @@
 
 use std::ops::Mul;
-
 use std::fs::File;
 use std::io::Write;
 use std::ops::Add;
@@ -11,6 +10,13 @@ pub struct Color {
     pub red:f32,
     pub green:f32,
     pub blue:f32,
+}
+
+#[derive(Clone, Copy)]
+pub struct Coloru8 {
+    pub red:u8,
+    pub green:u8,
+    pub blue:u8,
 }
 
 #[derive(Clone, Copy)]
@@ -60,24 +66,27 @@ impl Iterator for RegionIter {
         }
         let ret = (self.x, self.y);
         self.x += 1;
-        return Some(ret);
+        Some(ret)
     }
 }
 
 impl Color {
-    pub fn lerp(t:f32, a:Color, b:Color) -> Color {
-        (1.0-t)*a + t*b
-    }
     pub fn new(red:f32, green:f32, blue:f32) -> Color {
         Color{ red, green, blue }
     }
+    #[inline]
     pub fn black() -> Color {
         Color::new(0.0, 0.0, 0.0)
+    }
+    #[inline]
+    pub fn lerp(t:f32, a:Color, b:Color) -> Color {
+        (1.0-t)*a + t*b
     }
 }
 
 impl Add for Color {
     type Output = Color;
+    #[inline]
     fn add(self, other: Color) -> Color {
         Color{
             red: self.red + other.red,
@@ -86,8 +95,10 @@ impl Add for Color {
         }
     }
 }
+
 impl Mul<Color> for f32 {
     type Output = Color;
+    #[inline]
     fn mul(self, rhs: Color) -> Color {
         Color { 
             red: rhs.red*self,
@@ -96,8 +107,10 @@ impl Mul<Color> for f32 {
          }
     }
 }
+
 impl Mul for Color {
     type Output = Self;
+    #[inline]
     fn mul(self, rhs: Self) -> Self {
         Self::new(
             self.red * rhs.red,
@@ -107,8 +120,8 @@ impl Mul for Color {
     }
 }
 
-
 impl Region {
+
     pub fn chunks(&self, size:usize) -> Vec<Region> {
         let mut chunks = Vec::new();
         let mut region = Region {
@@ -134,11 +147,12 @@ impl Region {
             region.y += region.height;
             region.x = 0;
         }
-        return chunks;
+        chunks
     }
+
 }
 
-impl<'a> Image {
+impl Image {
 
     pub fn new(width:usize, height:usize) -> Image {
         Image::new_with_region( Region {
@@ -151,10 +165,12 @@ impl<'a> Image {
         Image { region, bytes }
     }
 
+    #[inline]
     pub fn width(&self) -> usize {
         self.region.width
     }
 
+    #[inline]
     pub fn height(&self) -> usize {
         self.region.height
     }
@@ -176,6 +192,16 @@ impl<'a> Image {
             dst_bytes[i] = (v + 0.5) as u8; // ensure proper rounding!
         }
     }
+    
+    #[inline]
+    pub fn y_range_iter(&self) -> std::ops::Range<usize> {
+        self.region.y..self.region.y+self.region.height
+    }
+
+    #[inline]
+    pub fn x_range_iter(&self) -> std::ops::Range<usize> {
+        self.region.x..self.region.x+self.region.width
+    }
 
     pub fn blit(&self, src:&Image) {
         let x = src.region.x;
@@ -195,7 +221,7 @@ impl<'a> Image {
             }
             for i in 0..src_stride {
                 if x+i >= dst_stride {
-                    continue;
+                    break;
                 }
                 dst_bytes[dst_offset+i] = src_bytes[src_offset+i];
             }
@@ -204,12 +230,7 @@ impl<'a> Image {
         }
     }
 
-    pub fn set_pixel_color(&self, x:usize, y:usize, color:Color) {
-        let normalize = |f:f32| -> u8 {
-            let n = (255.0 * f) as u8;
-            u8::clamp(n, 0, 255)
-        };
-
+    pub fn set_pixel_color_u8(&self, x:usize, y:usize, color:Coloru8) {
         let width = self.region.width;
         let height = self.region.height;
         let minx = self.region.x;
@@ -233,9 +254,21 @@ impl<'a> Image {
         let mut bytes = self.bytes.lock().unwrap();
 
         // (B,G,R)
-        bytes[i+0] = normalize(color.blue);
-        bytes[i+1] = normalize(color.green);
-        bytes[i+2] = normalize(color.red);
+        bytes[i+0] = color.blue;
+        bytes[i+1] = color.green;
+        bytes[i+2] = color.red;
+    }
+
+    pub fn set_pixel_color(&self, x:usize, y:usize, color:Color) {
+        let normalize = |f:f32| -> u8 {
+            let n = (255.0 * f) as u8;
+            u8::clamp(n, 0, 255)
+        };
+        self.set_pixel_color_u8(x, y, Coloru8 {
+            red:   normalize(color.red),
+            green: normalize(color.green),
+            blue:  normalize(color.blue),
+        });
     }
 
     pub fn write_bmp(&self, path: &str) {
@@ -247,7 +280,7 @@ impl<'a> Image {
         let h = self.region.height;
         let filesize:u32 = 52 + (3*w*h) as u32;
 
-        let mut file_header: [u8; 14] = ['B' as u8,'M' as u8, 0,0,0,0, 0,0, 0,0, 54,0,0,0];
+        let mut file_header: [u8; 14] = [b'B', b'M', 0,0,0,0, 0,0, 0,0, 54,0,0,0];
         let mut info_header: [u8; 40] = [40,0,0,0, 0,0,0,0, 0,0,0,0, 1,0, 24,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0];
         let stride_pad: [u8; 3] = [0, 0, 0];
 

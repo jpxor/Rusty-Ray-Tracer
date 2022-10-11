@@ -1,27 +1,23 @@
 
-use std::sync::Arc;
-use rand::Rng;
-
 use crate::ray::Ray;
 use crate::image::Color;
 use crate::hittables::HitRecord;
+use crate::randlut::random_unit_vector3;
+
+use cgmath::AbsDiffEq;
+use std::sync::Arc;
+use rand::Rng;
 
 type Vector3 = cgmath::Vector3<f32>;
-use cgmath::AbsDiffEq;
-
-use crate::renderer::random_unit_vector3;
 
 pub struct Scattered {
-    pub attenuation:Color,
-    pub ray:Ray,
+    pub attenuation: Color,
+    pub ray: Ray,
 }
 
 impl Scattered {
     pub fn new(ray:Ray, attenuation:Color) -> Option<Scattered> {
-        Some(Scattered{
-            attenuation,
-            ray,
-        })
+        Some( Scattered{ attenuation,  ray } )
     }
 }
 
@@ -29,16 +25,16 @@ pub trait Material: Sync+Send {
     fn scatter(&self, ray:&Ray, hit:&HitRecord) -> Option<Scattered>;
 }
 
-pub fn equal(a:&Vector3, b:&Vector3) -> bool {
+fn equal(a:&Vector3, b:&Vector3) -> bool {
     let epsilon = cgmath::Vector3::<f32>::default_epsilon();
     a.abs_diff_eq(b, epsilon)
 }
 
-pub fn reflect(v:Vector3, n:Vector3) -> Vector3 {
+fn reflect(v:Vector3, n:Vector3) -> Vector3 {
     v - 2.0 * cgmath::dot(v, n) * n
 }
 
-pub fn refract(uv:Vector3, n:Vector3, ratio:f32) -> Vector3 {
+fn refract(uv:Vector3, n:Vector3, ratio:f32) -> Vector3 {
     let cos_theta = f32::min(cgmath::dot(-uv,n), 1.0);
     let perpendicular = ratio * (uv + cos_theta * n);
     let parallel = -f32::abs(1.0 - cgmath::dot(perpendicular,perpendicular)).sqrt() * n;
