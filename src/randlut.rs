@@ -6,19 +6,12 @@ use std::cell::UnsafeCell;
 use std::rc::Rc;
 use cgmath::InnerSpace;
 type Vector3 = cgmath::Vector3<f32>;
-use lazy_static::lazy_static;
 
 // creating a thread local version of SmallRng using the same
 // technique as thread_rng as see here:
 // https://docs.rs/rand/0.8.5/src/rand/rngs/thread.rs.html#67-91
 thread_local! {
     static RNG: Rc<UnsafeCell<SmallRng>> = Rc::new(UnsafeCell::new(SmallRng::seed_from_u64(0)));
-}
-
-lazy_static! {
-    static ref RAND_UNIT_VECTOR_LUT:Vec<Vector3> = (0..128).map( |_| {
-        random_unit_vector3()
-    }).collect();
 }
 
 pub fn random_unit_vector3() -> Vector3 {
