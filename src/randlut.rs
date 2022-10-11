@@ -14,11 +14,8 @@ thread_local! {
     static RNG: Rc<UnsafeCell<SmallRng>> = Rc::new(UnsafeCell::new(SmallRng::seed_from_u64(0)));
 }
 
+#[inline]
 pub fn random_unit_vector3() -> Vector3 {
-    random_in_unit_sphere().normalize()
-}
-
-fn random_in_unit_sphere() -> Vector3 {
     let rng = RNG.with(|t| t.clone());
 
     // SAFETY: for thread local use only
@@ -33,11 +30,12 @@ fn random_in_unit_sphere() -> Vector3 {
         if cgmath::dot(v, v) > 1.0 {
             continue
         } else {
-            return v;
+            return v.normalize();
         }
     }
 }
 
+#[inline]
 pub fn random_in_unit_disk() -> Vector3 {
     let rng = RNG.with(|t| t.clone());
 

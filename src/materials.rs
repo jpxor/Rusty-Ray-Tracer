@@ -25,16 +25,16 @@ pub trait Material: Sync+Send {
     fn scatter(&self, ray:&Ray, hit:&HitRecord) -> Option<Scattered>;
 }
 
-pub fn equal(a:&Vector3, b:&Vector3) -> bool {
+fn equal(a:&Vector3, b:&Vector3) -> bool {
     let epsilon = cgmath::Vector3::<f32>::default_epsilon();
     a.abs_diff_eq(b, epsilon)
 }
 
-pub fn reflect(v:Vector3, n:Vector3) -> Vector3 {
+fn reflect(v:Vector3, n:Vector3) -> Vector3 {
     v - 2.0 * cgmath::dot(v, n) * n
 }
 
-pub fn refract(uv:Vector3, n:Vector3, ratio:f32) -> Vector3 {
+fn refract(uv:Vector3, n:Vector3, ratio:f32) -> Vector3 {
     let cos_theta = f32::min(cgmath::dot(-uv,n), 1.0);
     let perpendicular = ratio * (uv + cos_theta * n);
     let parallel = -f32::abs(1.0 - cgmath::dot(perpendicular,perpendicular)).sqrt() * n;

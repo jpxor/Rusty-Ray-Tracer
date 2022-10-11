@@ -71,19 +71,22 @@ impl Iterator for RegionIter {
 }
 
 impl Color {
-    pub fn lerp(t:f32, a:Color, b:Color) -> Color {
-        (1.0-t)*a + t*b
-    }
     pub fn new(red:f32, green:f32, blue:f32) -> Color {
         Color{ red, green, blue }
     }
+    #[inline]
     pub fn black() -> Color {
         Color::new(0.0, 0.0, 0.0)
+    }
+    #[inline]
+    pub fn lerp(t:f32, a:Color, b:Color) -> Color {
+        (1.0-t)*a + t*b
     }
 }
 
 impl Add for Color {
     type Output = Color;
+    #[inline]
     fn add(self, other: Color) -> Color {
         Color{
             red: self.red + other.red,
@@ -95,6 +98,7 @@ impl Add for Color {
 
 impl Mul<Color> for f32 {
     type Output = Color;
+    #[inline]
     fn mul(self, rhs: Color) -> Color {
         Color { 
             red: rhs.red*self,
@@ -106,6 +110,7 @@ impl Mul<Color> for f32 {
 
 impl Mul for Color {
     type Output = Self;
+    #[inline]
     fn mul(self, rhs: Self) -> Self {
         Self::new(
             self.red * rhs.red,
@@ -160,18 +165,22 @@ impl Image {
         Image { region, bytes }
     }
 
+    #[inline]
     pub fn width(&self) -> usize {
         self.region.width
     }
 
+    #[inline]
     pub fn height(&self) -> usize {
         self.region.height
     }
 
+    #[inline]
     pub fn y_range_iter(&self) -> std::ops::Range<usize> {
         self.region.y..self.region.y+self.region.height
     }
 
+    #[inline]
     pub fn x_range_iter(&self) -> std::ops::Range<usize> {
         self.region.x..self.region.x+self.region.width
     }

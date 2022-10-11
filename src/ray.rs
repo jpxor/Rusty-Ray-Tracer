@@ -12,12 +12,18 @@ impl Ray {
         let direction = direction.normalize();
         Ray {origin, direction}
     }
+
+    #[inline]
     pub fn at(&self, t:f32) -> Vector3 {
         self.origin + t*self.direction
     }
+
+    #[inline]
     pub fn origin(&self) -> Vector3 {
         self.origin
     }
+
+    #[inline]
     pub fn direction(&self) -> Vector3 {
         self.direction
     }

@@ -12,8 +12,6 @@ use rand::{Rng, SeedableRng};
 use rand::rngs::SmallRng;
 use cgmath::InnerSpace;
 
-type Vector3 = cgmath::Vector3<f32>;
-
 lazy_static! {
     static ref GAMMA_LUT:Vec<u8> = (0..256).map( |i| {
         (255.0 * (i as f32 / 255.0).sqrt()) as u8
@@ -80,7 +78,7 @@ impl Renderer {
         }
     }
 
-    pub fn cast(&self, scene:&Scene, ray:&Ray, depth:usize) -> Color {
+    fn cast(&self, scene:&Scene, ray:&Ray, depth:usize) -> Color {
         if depth == 0 {
             return self.on_miss(ray);
         }
@@ -90,7 +88,7 @@ impl Renderer {
         }
     }
 
-    pub fn on_miss(&self, ray:&Ray) -> Color {
+    fn on_miss(&self, ray:&Ray) -> Color {
         let dir = ray.direction().normalize();
         let t = 0.5 * (dir.y + 1.0);
         Color::lerp(t,
@@ -99,7 +97,7 @@ impl Renderer {
         )
     }
     
-    pub fn on_hit(&self, scene:&Scene, ray:&Ray, depth:usize, hit:HitRecord) -> Color {
+    fn on_hit(&self, scene:&Scene, ray:&Ray, depth:usize, hit:HitRecord) -> Color {
         match hit.material.scatter(ray, &hit) {
             None => Color::black(),
             Some(scatter) => {
