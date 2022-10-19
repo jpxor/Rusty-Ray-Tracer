@@ -271,6 +271,12 @@ impl Image {
         });
     }
 
+    #[inline]
+    pub fn get_pixel_u32(&self, i:usize) -> u32 {
+        let bytes = self.bytes.lock().unwrap();
+        (bytes[i] as u32) << 0 | (bytes[i+1] as u32) << 8 | (bytes[i+2] as u32) << 16
+    }
+
     pub fn write_bmp(&self, path: &str) {
         let mut file = match File::create(&path) {
             Err(why) => panic!("couldn't create {}: {}", path, why),

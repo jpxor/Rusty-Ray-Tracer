@@ -6,4 +6,5 @@ pub mod renderer;
 pub mod hittables;
 pub mod materials;
 pub mod utils;
+pub mod window;
 mod randlut;
